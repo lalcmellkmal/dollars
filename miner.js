@@ -1,0 +1,1 @@
+www/js/miner/miner-0.1.js
