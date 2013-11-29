@@ -1,1 +1,1 @@
-www/js/miner/miner-0.1.js
+www/miner/miner-0.1.js

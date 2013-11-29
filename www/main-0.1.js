@@ -1,10 +1,26 @@
+require.config({
+	shim: {
+		backbone: {
+			deps: ['underscore', 'jquery'],
+			exports: 'Backbone',
+		},
+		jquery: {exports: '$'},
+		underscore: {exports: '_'},
+	},
+	paths: {
+		backbone: 'vendor/backbone-1.1.0.min',
+		jquery: 'vendor/jquery-2.0.3.min',
+		underscore: 'vendor/underscore-1.5.2.min',
+	},
+});
+
 (function () {
+
+var MINER_JS = 'miner/miner-0.1.js';
 
 var WORKERS = [];
 var LOG, DIFFICULTY, BEST, BEST_HASH, START_TIME;
 var MESSAGE;
-
-var $message;
 
 function reset(log, difficulty) {
 	LOG = log;
@@ -20,7 +36,7 @@ function reset(log, difficulty) {
 }
 
 function spawn() {
-	var worker = new Worker('js/miner/miner-0.1.js');
+	var worker = new Worker(MINER_JS);
 	worker.onmessage = onMessage;
 	// onclose?
 	worker.postMessage({
@@ -86,16 +102,16 @@ function renderStatus() {
 		msg = stats + " with best hash " + BEST_HASH + ".";
 	}
 	document.title = msg;
-	if ($message) $message.textContent = msg;
+	$('#message').text(msg);
 }
 
 function go() {
-	var log = document.getElementById('log').textContent;
+	var log = $('#log').text();
 	if (!log) {
 		alert("Can't find the log to hash, sorry!");
 		return;
 	}
-	var difficulty = parseInt(document.getElementById('difficulty').textContent, 10);
+	var difficulty = parseInt($('#difficulty').text(), 10);
 	if (!difficulty) {
 		alert("Can't figure out the current difficulty, sorry!");
 		return;
@@ -105,15 +121,15 @@ function go() {
 		spawn();
 }
 
-requirejs(['domReady'], function (domReady) {
-	$message = document.getElementById('message');
+require(['jquery', 'backbone'], function ($, Backbone) {
+	Backbone.$ = $;
 
 	if (typeof Worker == 'undefined') {
-		$message.textContent = "Your browser does not support Web Workers, sorry!";
+		MESSAGE = "Your browser does not support Web Workers, sorry!";
+		renderStatus();
 		return;
 	}
-
-	go();
+	$(go);
 });
 
 }());
