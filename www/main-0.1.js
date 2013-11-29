@@ -121,6 +121,13 @@ function go() {
 		spawn();
 }
 
+requirejs.onError = function (error) {
+	MESSAGE = "ERROR! Couldn't load script. Please try again later.";
+	var $message = document.getElementById('message');
+	$message.textContent = MESSAGE;
+	console.error(error);
+};
+
 require(['jquery', 'backbone'], function ($, Backbone) {
 	Backbone.$ = $;
 
