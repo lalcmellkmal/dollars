@@ -1,10 +1,8 @@
 var config = require('./config'),
-    connect = require('connect'),
-    fs = require('fs'),
-    Handlebars = require('handlebars');
+    express = require('express'),
+    fs = require('fs');
 
 const WORDS = Object.freeze(require('./words'));
-const INDEX_TMPL = templateSync('tmpl/index.html');
 
 function generateRandomLog() {
 	if (WORDS.length < 41000)
@@ -31,29 +29,24 @@ function allDifferent(words) {
 	return true;
 }
 
-function templateSync(filename) {
-	var raw = fs.readFileSync(__dirname + '/' + filename, 'utf8');
-	return Handlebars.compile(raw);
-}
-
-function indexRoute(req, resp, next) {
-	if (req.method == 'GET' && req.url == '/') {
-		var html = INDEX_TMPL({
-			hashString: generateRandomLog(),
-			difficulty: 5,
-		});
-		resp.writeHead(200, {'Content-Type': 'text/html'});
-		resp.end(html);
-		return;
-	}
-	next();
+function indexRoute(req, resp) {
+	resp.render('index', {
+		hashString: generateRandomLog(),
+		difficulty: 5,
+	});
 }
 
 function listen() {
-	var app = connect.createServer();
-	app.use(indexRoute);
-	app.use(connect.static(__dirname + '/www'));
+	var app = express();
+
+	app.engine('html', require('consolidate').handlebars);
+	app.set('view engine', 'html');
+	app.set('views', __dirname + '/tmpl');
+
+	app.get('/', indexRoute);
+	app.use(express.static(__dirname + '/www'));
 	app.listen(config.LISTEN_PORT);
+	console.log('Listening on :' + config.LISTEN_PORT);
 }
 
 if (require.main === module) {
