@@ -1,4 +1,5 @@
 var config = require('./config'),
+    crypto = require('crypto'),
     express = require('express'),
     fs = require('fs');
 
@@ -17,7 +18,18 @@ function generateRandomLog() {
 }
 
 function randomChoice(list) {
-	return list[Math.floor(Math.random() * list.length)];
+	var n = list.length;
+	var i = Math.floor(Math.random() * n);
+	// attempt to mix some better randomness in
+	// this probably introduces some slight bias at the
+	// boundary due to the overflow check
+	if (n > 256) {
+		var c = crypto.randomBytes(1)[0];
+		var mixed = i ^ c;
+		if (mixed >= 0 && mixed < n)
+			i = mixed;
+	}
+	return list[i];
 }
 
 function allDifferent(words) {
