@@ -1,7 +1,9 @@
 var config = require('./config'),
     crypto = require('crypto'),
+    db = require('./db'),
     express = require('express'),
-    fs = require('fs');
+    fs = require('fs'),
+    persona = require('./persona');
 
 const WORDS = Object.freeze(require('./words'));
 
@@ -42,9 +44,24 @@ function allDifferent(words) {
 }
 
 function indexRoute(req, resp) {
+	var email = req.session.email;
 	resp.render('index', {
 		hashString: generateRandomLog(),
 		difficulty: 5,
+		login: email || '',
+	});
+}
+
+function redeemRoute(req, resp, next) {
+	var redemption = req.body;
+	console.log('got redemption', req.body);
+	db.redeem(req.body, function (err, redeemed) {
+		if (err)
+			return next(err);
+		if (redeemed)
+			resp.send({redeemed: true, balance: 1});
+		else
+			resp.send({redeemed: false});
 	});
 }
 
@@ -55,12 +72,30 @@ function listen() {
 	app.set('view engine', 'html');
 	app.set('views', __dirname + '/tmpl');
 
+	var RedisStore = require('connect-redis')(express);
+	app.use(express.urlencoded());
+	app.use(express.json());
+	app.use(express.cookieParser());
+	app.use(express.session({
+		cookie: {expires: config.SESSION_TIME},
+		key: 'dollarsId',
+		secret: config.SESSION_SECRET,
+		proxy: config.TRUST_FORWARDED_FOR,
+		store: new RedisStore({
+			client: global.sharedRedis,
+			prefix: global.redisPrefix + 'sess:',
+		}),
+	}));
+
 	app.get('/', indexRoute);
+	app.post(/^\/redeem$/, redeemRoute);
+	app.post(/^\/persona$/, persona.route);
 	app.use(express.static(__dirname + '/www'));
+
 	app.listen(config.LISTEN_PORT);
 	console.log('Listening on :' + config.LISTEN_PORT);
 }
 
 if (require.main === module) {
-	listen();
+	db.setup(listen);
 }

@@ -1,0 +1,13 @@
+{
+	"name": "doushio-dollars",
+	"version": "0.0.1",
+	"description": "Centralized virtual play-currency",
+	"license": "BSD",
+	"dependencies": {
+		"connect-redis": "1.4.6",
+		"consolidate": "0.10.0",
+		"express": "3.4.5",
+		"handlebars": "1.0.7",
+		"redis": "0.9.1"
+	}
+}

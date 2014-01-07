@@ -5,16 +5,20 @@ require.config({
 			exports: 'Backbone',
 		},
 		jquery: {exports: '$'},
+		persona: {exports: 'navigator.id'},
 		underscore: {exports: '_'},
 	},
 	paths: {
 		backbone: 'vendor/backbone-1.1.0.min',
+		reqcss: 'vendor/reqcss.min',
 		jquery: 'vendor/jquery-2.0.3.min',
+		persona: 'http://login.persona.org/include',
 		underscore: 'vendor/underscore-1.5.2.min',
 	},
 });
 
-(function () {
+require(['jquery', 'backbone', 'reqcss'], function ($, Backbone) {
+Backbone.$ = $;
 
 var MINER_JS = 'miner/miner-0.1.js';
 
@@ -91,7 +95,20 @@ function redeem(info) {
 	var seconds = Math.floor(ms / 1000);
 	var duration = seconds ? (seconds.toLocaleString() + ' seconds') : "???";
 	var iterations = totalIterations().toLocaleString() + ' attempts';
+	$.post('redeem', {
+		data: info,
+		success: onPoll,
+		failure: onFail,
+	});
 	MESSAGE = "WINNING HASH FOUND after " + duration + " and " + iterations + ": " + info.hash;
+}
+
+function onPoll() {
+	console.log('polled', arguments);
+}
+
+function onFail() {
+	console.log('failed', arguments);
 }
 
 function renderStatus() {
@@ -128,15 +145,21 @@ requirejs.onError = function (error) {
 	console.error(error);
 };
 
-require(['jquery', 'backbone'], function ($, Backbone) {
-	Backbone.$ = $;
-
+$(function () {
 	if (typeof Worker == 'undefined') {
 		MESSAGE = "Your browser does not support Web Workers, sorry!";
 		renderStatus();
 		return;
 	}
-	$(go);
-});
 
+	var curLogin = $('script[data-login]').data('login');
+	var debugLogin = false;
+	if (!curLogin && debugLogin) {
+	}
+	else if (!curLogin) {
+		require(['login-0.1'], function (login) {
+		});
+	}
 }());
+
+});

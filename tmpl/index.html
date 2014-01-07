@@ -2,9 +2,9 @@
 <head>
 	<meta charset="utf-8">
 	<title>Doushio Dollars</title>
-	<script data-main="main-0.1" src="vendor/require-2.1.9.js" async></script>
+	<script data-main="main-0.1" data-login="{{ login }}" src="vendor/require-2.1.9.js" async></script>
 </head>
-<h1>Dollars</h1>
+<h1>Dollars {{ login }}</h1>
 <noscript><h2>Javascript required.</h2></noscript>
 <p id="message">Loading&hellip;</p>
 <p>Difficulty: <b id="difficulty">{{ difficulty }}</b> zeroes.</p>
